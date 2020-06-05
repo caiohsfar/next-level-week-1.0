@@ -4,6 +4,7 @@
 
 ### Node ###
 # Logs
+change-email2.sh
 dist
 logs
 *.log
