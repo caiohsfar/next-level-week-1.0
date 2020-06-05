@@ -1,28 +1,35 @@
 // Update with your config settings.
 import path from 'path'
 
-export default {
+const config = {
   development: {
     client: 'sqlite3',
     connection: {
-      filename: path.resolve(__dirname, 'src', 'database', 'dev.sqlite3')
+      filename: path.resolve(__dirname, 'src', 'database', 'dev.sqlite')
     },
     migrations: {
       directory: path.resolve(__dirname, 'src', 'database', 'migrations')
-    }
+    },
+    seeds: {
+      directory: path.resolve(__dirname, 'src', 'database', 'seeds')
+    },
+    useNullAsDefault: true
   },
   test: {
     client: 'sqlite3',
     connection: {
-      filename: path.resolve(__dirname, 'src', 'database', 'test.sqlite3'),
+      filename: path.resolve(__dirname, 'src', 'database', 'test.sqlite'),
     },
     migrations: {
       directory: path.resolve(__dirname, 'src', 'database', 'migrations')
-    }
-
+    },
+    seeds: {
+      directory: path.resolve(__dirname, 'src', 'database', 'seeds')
+    },
+    useNullAsDefault: true
   },
   staging: {
-    client: 's',
+    client: 'mysql',
     connection: {
       database: 'my_db',
       user: 'username',
@@ -34,7 +41,9 @@ export default {
     },
     migrations: {
       tableName: 'knex_migrations'
-    }
+    },
+    useNullAsDefault: true
+
   },
 
   production: {
@@ -50,6 +59,19 @@ export default {
     },
     migrations: {
       tableName: 'knex_migrations'
-    }
+    },
+    useNullAsDefault: true
   }
 };
+
+let configToExport: Object
+
+if (process.env.NODE_ENV === "test") {
+  configToExport = config.test
+} else if (process.env.NODE_ENV === "development") {
+  configToExport = config.development
+} else {
+  configToExport = config.production
+}
+
+module.exports = configToExport
