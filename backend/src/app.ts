@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import routes from "./routes";
+import path from 'path'
 
 class App {
     public express: express.Application
@@ -20,6 +21,7 @@ class App {
 
     private setupRoutes(): void {
         this.express.use(routes)
+        this.express.use('/uploads', express.static(path.resolve(__dirname, '..', 'uploads')))
     }
 }
 

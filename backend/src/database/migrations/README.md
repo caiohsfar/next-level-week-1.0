@@ -1,0 +1,1 @@
+## A ordem que as migrations são criadas depende da ordem dos aquivos
