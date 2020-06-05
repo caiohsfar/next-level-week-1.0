@@ -8,8 +8,10 @@
     "test:integration": "NODE_ENV=test jest --colors --watchAll -c jest.integration.config.js",
     "test:unit": "NODE_ENV=test jest --colors --watchAll -c jest.unit.config.js",
     "test:ci": "NODE_ENV=test jest --colors --coverage -c",
-    "dev": "NODE_ENV=development ts-node-dev dist/server.js",
-    "start": "NODE_ENV=production tsc && node dist/server.js"
+    "dev": "NODE_ENV=development ts-node-dev src/server.ts",
+    "start": "NODE_ENV=production tsc && node dist/server.js",
+    "knex:migrate": "NODE_ENV=development knex --knexfile knexfile.ts migrate:latest",
+    "knex:seed": "NODE_ENV=development knex --knexfile knexfile.ts seed:run"
   },
   "author": "Caio Farias",
   "license": "ISC",
@@ -28,6 +30,8 @@
   },
   "devDependencies": {
     "@types/jest": "^25.2.3",
+    "@types/supertest": "^2.0.9",
+    "supertest": "^4.0.2",
     "ts-jest": "^26.1.0",
     "ts-node": "^8.10.2",
     "ts-node-dev": "^1.0.0-pre.44",
