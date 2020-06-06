@@ -1,7 +1,8 @@
 // Update with your config settings.
 import path from 'path'
+import Knex from 'knex';
 
-const config = {
+const knexConfig = {
   development: {
     client: 'sqlite3',
     connection: {
@@ -64,14 +65,13 @@ const config = {
   }
 };
 
-let configToExport: Object
-
-if (process.env.NODE_ENV === "test") {
-  configToExport = config.test
-} else if (process.env.NODE_ENV === "development") {
-  configToExport = config.development
-} else {
-  configToExport = config.production
+function chooseConfig(): Knex.Config {
+  if (process.env.NODE_ENV === "test") {
+    return knexConfig.test
+  } else if (process.env.NODE_ENV === "development") {
+    return knexConfig.development
+  }
+  return knexConfig.production
 }
 
-module.exports = configToExport
+module.exports = chooseConfig()
