@@ -20,7 +20,7 @@ describe('Routes: items', () => {
     })
 
     describe('GET /items', () => {
-        test('Should return an array of items', async (done) => {
+        test('Should return an array of items', done => {
             request.get('/items')
                 .end((err, res) => {
                     expect(res.status).toBe(200)
