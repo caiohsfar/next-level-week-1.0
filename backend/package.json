@@ -11,7 +11,8 @@
     "dev": "NODE_ENV=development ts-node-dev src/server.ts",
     "start": "NODE_ENV=production tsc && node dist/server.js",
     "knex:migrate": "NODE_ENV=development knex --knexfile knexfile.ts migrate:latest",
-    "knex:seed": "NODE_ENV=development knex --knexfile knexfile.ts seed:run"
+    "knex:seed": "NODE_ENV=development knex --knexfile knexfile.ts seed:run",
+    "knex:migrate:undo": "knex --knexfile knexfile.ts migrate:rollback --all"
   },
   "author": "Caio Farias",
   "license": "ISC",
@@ -25,6 +26,7 @@
     "express": "^4.17.1",
     "jest": "^26.0.1",
     "knex": "^0.21.1",
+    "log4js": "^6.3.0",
     "sinon": "^9.0.2",
     "sqlite3": "^4.2.0"
   },
