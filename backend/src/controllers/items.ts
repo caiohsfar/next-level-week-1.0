@@ -1,10 +1,10 @@
-import { Request, Response, response } from "express";
-import knex from '../../src/database/connection'
+import { Request, Response } from "express";
+import app from "../app";
 
 class ItemsController {
     public async index(req: Request, res: Response) {
         try {
-            const items = await knex.select('*').from('items')
+            const items = await app.database.select('*').from('items')
 
             const serializedItems = items.map(item => {
                 return {
@@ -15,7 +15,8 @@ class ItemsController {
 
             return res.send({ data: serializedItems })
         } catch (error) {
-            console.error(error)
+            app.logger.error(error)
+            res.status(500).send(new Error("Could not get Items."))
         }
 
     }

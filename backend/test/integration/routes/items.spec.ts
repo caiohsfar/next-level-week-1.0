@@ -1,4 +1,3 @@
-import connection from '../../../src/database/connection'
 import supertest, { SuperTest } from 'supertest'
 import app from '../../../src/app'
 
@@ -6,17 +5,17 @@ describe('Routes: items', () => {
     let request: SuperTest<supertest.Test>
 
     beforeAll(() => {
-        request = supertest(app)
+        request = supertest(app.server)
     })
 
     beforeEach(async () => {
-        await connection.migrate.rollback()
-        await connection.migrate.latest()
-        await connection.seed.run()
+        await app.database.migrate.rollback()
+        await app.database.migrate.latest()
+        await app.database.seed.run()
     })
 
     afterEach(async () => {
-        await connection.migrate.rollback()
+        await app.database.migrate.rollback()
     })
 
     describe('GET /items', () => {

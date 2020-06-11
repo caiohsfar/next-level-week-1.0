@@ -3,26 +3,44 @@ import cors from 'cors'
 import bodyParser from 'body-parser'
 import routes from "./routes";
 import path from 'path'
+import Knex from 'knex';
+import connection from '../src/database/connection'
+import log4js from 'log4js';
 
 class App {
-    public express: express.Application
+    public server: express.Application
+    public database: Knex
+    public logger: log4js.Logger
 
     public constructor() {
-        this.express = express()
+        this.server = express()
+        this.database = connection
+        this.logger = this.setUpAndGetLogger()
+
         this.setupMiddlewares()
         this.setupRoutes()
     }
 
     private setupMiddlewares(): void {
-        this.express.use(cors())
-        this.express.use(bodyParser.urlencoded({ extended: false }))
-        this.express.use(bodyParser.json())
+        this.server.use(cors())
+        this.server.use(bodyParser.urlencoded({ extended: false }))
+        this.server.use(bodyParser.json())
     }
 
     private setupRoutes(): void {
-        this.express.use(routes)
-        this.express.use('/uploads', express.static(path.resolve(__dirname, '..', 'uploads')))
+        this.server.use(routes)
+        this.server.use('/uploads', express.static(path.resolve(__dirname, '..', 'uploads')))
     }
+
+    private setUpAndGetLogger(): log4js.Logger {
+        log4js.configure({
+            appenders: { app: { type: "file", filename: "app.log" } },
+            categories: { default: { appenders: ["app"], level: "error" } }
+        });
+
+        return log4js.getLogger()
+    }
+
 }
 
-export default new App().express
+export default new App()
