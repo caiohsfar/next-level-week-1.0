@@ -1,7 +1,8 @@
 import sinon from 'sinon'
-import app from '../../../src/app'
-import itemsController from '../../../src/controllers/items'
+import ItemsController from '../../../src/controllers/items'
 import { Request, Response } from 'express'
+import knexMock from '../../../src/database/mocks/knex'
+import Knex from 'knex'
 
 describe('Controller: Items', () => {
     const defaultRequest = {
@@ -23,10 +24,11 @@ describe('Controller: Items', () => {
 
     describe('index()', () => {
         it('Should return an array of items', async () => {
-            const dbMock = sinon.mock(app.database)
+            const dbMock = sinon.mock(knexMock)
             dbMock.expects('select').once().withArgs('*').returnsThis()
             dbMock.expects('from').once().withArgs('items').resolves(itemsDbArray)
 
+            const itemsController = new ItemsController(knexMock as unknown as Knex)
             await itemsController.index(defaultRequest, defaultResponse as unknown as Response)
 
             dbMock.verify()
@@ -42,12 +44,13 @@ describe('Controller: Items', () => {
 
         describe('when throw an error', () => {
             it('should return 500 as status code and an error message', async () => {
-                const dbMock = sinon.mock(app.database)
+                const dbMock = sinon.mock(knexMock)
 
                 defaultResponse.status.withArgs(500).returnsThis()
                 dbMock.expects('select').once().withArgs('*').returnsThis()
                 dbMock.expects('from').once().withArgs('items').rejects(new Error('Could not get items'))
 
+                const itemsController = new ItemsController(knexMock as unknown as Knex)
                 await itemsController.index(defaultRequest, defaultResponse as unknown as Response)
 
                 dbMock.verify()
