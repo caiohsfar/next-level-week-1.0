@@ -6,13 +6,13 @@ describe('Routes: points', () => {
     let request: SuperTest<supertest.Test>
 
     const pointId = 6
+    const inexistentPointId = 100
     const pointToReturn = {
         point: expect.any(Object)
         ,
-        item: expect.objectContaining({
-            title: expect.any(String),
-            image: expect.any(String)
-        }),
+        items: expect.arrayContaining([
+            { title: "Resíduos Orgânicos" }
+        ]),
     }
     const requestBody = {
         name: "A test point",
@@ -56,10 +56,22 @@ describe('Routes: points', () => {
         test('Should return a point with its items successfully', done => {
             request.get(`/points/${pointId}`)
                 .end((err, res) => {
-                    expect(res.status).toBe(201)
-                    expect(res.body.data)
-                        .toMatchObject(
-                            expect.objectContaining(pointToReturn))
+                    expect(res.status).toBe(200)
+                    expect(res.body.data).toMatchObject(
+                        expect.objectContaining(pointToReturn)
+                    )
+                    done(err)
+                })
+        })
+        test('Should return 400 when passing a inexistent point id', done => {
+            request.get(`/points/${inexistentPointId}`)
+                .end((err, res) => {
+                    expect(res.status).toBe(400)
+                    expect(res.body).toMatchObject(
+                        expect.objectContaining({
+                            message: "Point not found"
+                        })
+                    )
                     done(err)
                 })
         })
