@@ -1,9 +1,10 @@
 import express from 'express'
-import pointsController from '../controllers/points'
+import PointsController from '../controllers/points'
+import database from '../database/connection'
 
 const pointsRouter = express.Router()
 
-
-pointsRouter.post('/', pointsController.create)
+const pointsController = new PointsController(database)
+pointsRouter.post('/', (req, res) => pointsController.create(req, res))
 
 export default pointsRouter
