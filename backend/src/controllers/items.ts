@@ -1,12 +1,15 @@
 import { Request, Response } from "express";
-//import app from "../app";
+import log4js from 'log4js';
+import logger from '../../src/utils/logger'
 import Knex from "knex";
 
 export default class ItemsController {
     private database: Knex
+    private logger: log4js.Logger
 
     constructor(database: Knex) {
         this.database = database
+        this.logger = logger.getLogger()
     }
 
     public async index(req: Request, res: Response) {
@@ -21,7 +24,7 @@ export default class ItemsController {
 
             return res.send({ data: serializedItems })
         } catch (error) {
-            //app.logger.error(error)
+            this.logger.error(error)
             res.status(500).send(new Error("Could not get Items."))
         }
 
