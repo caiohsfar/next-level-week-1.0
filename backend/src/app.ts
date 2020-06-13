@@ -9,14 +9,11 @@ import log4js from 'log4js';
 
 class App {
     public server: express.Application
-    public database: Knex
     public logger: log4js.Logger
 
     public constructor() {
         this.server = express()
-        this.database = connection
         this.logger = this.setUpAndGetLogger()
-
         this.setupMiddlewares()
         this.setupRoutes()
     }
