@@ -1,21 +1,23 @@
 import supertest, { SuperTest } from 'supertest'
 import app from '../../../src/app'
+import database from '../../../src/database/connection'
 
 describe('Routes: items', () => {
     let request: SuperTest<supertest.Test>
 
-    beforeAll(() => {
+    beforeAll(async () => {
         request = supertest(app.server)
+        await database.migrate.rollback()
+        await database.migrate.latest()
     })
 
     beforeEach(async () => {
-        await app.database.migrate.rollback()
-        await app.database.migrate.latest()
-        await app.database.seed.run()
+        await database('items').truncate()
+        await database.seed.run()
     })
 
     afterEach(async () => {
-        await app.database.migrate.rollback()
+        await database.migrate.rollback()
     })
 
     describe('GET /items', () => {
