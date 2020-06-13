@@ -1,11 +1,21 @@
 import supertest, { SuperTest } from 'supertest'
+import database from '../../../src/database/connection'
 import app from '../../../src/app'
 
 describe('Routes: points', () => {
     let request: SuperTest<supertest.Test>
 
+    const pointId = 6
+    const pointToReturn = {
+        point: expect.any(Object)
+        ,
+        item: expect.objectContaining({
+            title: expect.any(String),
+            image: expect.any(String)
+        }),
+    }
     const requestBody = {
-        name: "A point",
+        name: "A test point",
         email: "A email",
         whatsapp: "valid-number",
         latitude: 81.22323,
@@ -15,18 +25,19 @@ describe('Routes: points', () => {
         items: [1, 2]
     }
 
-    beforeAll(() => {
+    beforeAll(async () => {
         request = supertest(app.server)
+        await database.migrate.rollback()
+        await database.migrate.latest()
     })
 
     beforeEach(async () => {
-        await app.database.migrate.rollback()
-        await app.database.migrate.latest()
-        await app.database.seed.run()
+        await database('points').truncate()
+        await database.seed.run()
     })
 
-    afterEach(async () => {
-        await app.database.migrate.rollback()
+    afterAll(async () => {
+        await database.migrate.rollback()
     })
 
     describe('POST /points', () => {
@@ -36,6 +47,19 @@ describe('Routes: points', () => {
                 .end((err, res) => {
                     expect(res.status).toBe(201)
                     expect(res.body.data.success).toBeTruthy()
+                    done(err)
+                })
+        })
+    })
+
+    describe('GET /points/:id', () => {
+        test('Should return a point with its items successfully', done => {
+            request.get(`/points/${pointId}`)
+                .end((err, res) => {
+                    expect(res.status).toBe(201)
+                    expect(res.body.data)
+                        .toMatchObject(
+                            expect.objectContaining(pointToReturn))
                     done(err)
                 })
         })
