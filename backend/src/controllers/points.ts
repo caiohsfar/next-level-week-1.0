@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
-import app from "../app";
+import Knex from "knex";
 
 class PointsController {
+    private database: Knex
+
+    constructor(database: Knex) {
+        this.database = database
+    }
     public async create(req: Request, res: Response) {
-        const trx = await app.database.transaction()
+        const trx = await this.database.transaction()
 
         try {
             const {
@@ -40,13 +45,17 @@ class PointsController {
 
             return res.status(201).send({ data: { success: true } })
         } catch (error) {
-            app.logger.error(error)
+            //app.logger.error(error)
             trx.rollback()
 
             return res.status(500).send(new Error("aa"))
         }
 
     }
+
+    public async show(req: Request, res: Response) {
+    }
 }
 
-export default new PointsController()
+export default PointsController
+
