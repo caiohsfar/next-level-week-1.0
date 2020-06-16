@@ -7,11 +7,19 @@ describe('Routes: points', () => {
 
     const pointId = 6
     const inexistentPointId = 100
-    const pointToReturn = {
-        point: expect.any(Object)
+    const pointItemToReturn = {
+        point: expect.objectContaining({
+            name: expect.any(String),
+            email: expect.any(String),
+            whatsapp: expect.any(String),
+            latitude: expect.any(Number),
+            longitude: expect.any(Number),
+            city: expect.any(String),
+            uf: expect.any(String)
+        })
         ,
         items: expect.arrayContaining([
-            { title: "Resíduos Orgânicos" }
+            { title: expect.any(String) }
         ]),
     }
     const requestBody = {
@@ -46,7 +54,7 @@ describe('Routes: points', () => {
                 .send(requestBody)
                 .end((err, res) => {
                     expect(res.status).toBe(201)
-                    expect(res.body.data.success).toBeTruthy()
+                    expect(res.body.data).toBeDefined()
                     done(err)
                 })
         })
@@ -58,7 +66,7 @@ describe('Routes: points', () => {
                 .end((err, res) => {
                     expect(res.status).toBe(200)
                     expect(res.body.data).toMatchObject(
-                        expect.objectContaining(pointToReturn)
+                        expect.objectContaining(pointItemToReturn)
                     )
                     done(err)
                 })
@@ -76,5 +84,19 @@ describe('Routes: points', () => {
                 })
         })
     })
+    describe('GET /points', () => {
+        test('Should return a list of points', done => {
+            request.get(`/points?city=fake-city&uf=uf&items=5,3`)
+                .end((err, res) => {
+                    expect(res.status).toBe(200)
+                    expect(res.body.data).toMatchObject(
+                        expect.arrayContaining([pointItemToReturn.point])
+                    )
+                    done(err)
+                })
+        })
+    })
+    
+
 })
 
