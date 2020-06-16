@@ -49,6 +49,18 @@ describe('Controller: Points', () => {
         fakeItem
     ]
 
+    const pointsToReturn = [
+        expect.objectContaining({
+            name: expect.any(String),
+            email: expect.any(String),
+            whatsapp: expect.any(String),
+            latitude: expect.any(Number),
+            longitude: expect.any(Number),
+            city: expect.any(String),
+            uf: expect.any(String)
+        })
+    ]
+
     describe('create()', () => {
         it('Should create an point', async () => {
             const request = { body: newPointBody } as Request
@@ -82,10 +94,8 @@ describe('Controller: Points', () => {
             sinon.assert.calledWith(defaultResponse.status, 201)
             expect(defaultResponse.send).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: expect.objectContaining({
-                        success: true
+                        data: expect.any(Object)
                     })
-                })
             )
         })
         it('should return 500 as status code and an error message', async () => {
@@ -98,8 +108,6 @@ describe('Controller: Points', () => {
 
             dbMock.expects('from').once().withArgs('points').returnsThis()
             dbMock.expects('insert').once().withArgs().rejects()
-
-
 
             dbMock.expects('rollback').once().resolves()
 
@@ -156,6 +164,114 @@ describe('Controller: Points', () => {
                     })
                 }))
         })
+
+        it('Should return 400 as status code when passing a inexistent point', async () => {
+            const pointId = 1
+            const request = { params: { id: pointId } } as unknown as Request
+            const dbMock: Sinon.SinonMock = sinon.mock(knexMock)
+
+
+            const response = {
+                send: jest.fn(),
+                status: sinon.stub()
+            }
+            response.status.withArgs(400).returnsThis()
+            // resgatar o point
+            dbMock.expects('from').once().withArgs('points').returnsThis()
+            dbMock.expects('where').once().withArgs('id', pointId).returnsThis()
+            dbMock.expects('first').once().resolves(undefined)
+            
+            const pointsController = new PointsController(knexMock as unknown as Knex)
+            await pointsController.show(request as Request, response as unknown as Response)
+
+
+            dbMock.verify()
+
+            sinon.assert.calledWith(response.status, 400)
+            expect(response.send).toBeCalledWith(expect.objectContaining({
+                message: expect.any(String)
+            }))
+        })
+        
+        
     })
+
+   
+    
+    
+    describe('index()', () => {
+        const buildIndexMockedQuery = (dbMock: Sinon.SinonMock, mockCity: String, mockUf: String) => {
+            dbMock.expects('from').withArgs('points').returnsThis()
+            dbMock.expects('join').withArgs('point_item', 'points.id', '=', 'point_item.point_id').returnsThis()
+            dbMock.expects('whereIn').once().withArgs('point_item.item_id', [1,2]).returnsThis()
+            dbMock.expects('where').withArgs('city', mockCity).returnsThis()
+            dbMock.expects('where').withArgs('uf', mockUf).returnsThis()
+            dbMock.expects('distinct').once().returnsThis()
+            return dbMock.expects('select').withArgs('points.*')
+
+        }
+
+        it('Should return a point that matched with passed query in params', async () => {
+           
+            const mockCity = 'fake-city'
+            const mockUf = 'uf'
+            const request = { query: { city: mockCity, uf: mockUf, items: "1 , 2" } } as unknown as Request
+            const response = {
+                send: jest.fn(),
+                status: sinon.stub()
+            }
+            const dbMock = sinon.mock(knexMock)
+
+            response.status.withArgs(200).returnsThis()
+            /* SQL
+                SELECT DISTINCT point.* FROM points join point_item on point.id = point_item.point_id
+                where point_item.item_id in [query-passed-items]
+                and point.city = {query-passed-city}
+                and point.uf = {query-passed-uf}
+            */
+
+            buildIndexMockedQuery(dbMock, mockCity, mockUf).resolves(pointsToReturn)
+            
+            const pointsController = new PointsController(knexMock as unknown as Knex)
+            await pointsController.index(request as Request, response as unknown as Response)
+
+            dbMock.verify()
+
+            sinon.assert.calledWith(response.status, 200)
+            expect(response.send).toBeCalledWith({ data: pointsToReturn })
+        })
+
+        it('Should return an error', async () => {
+            const mockCity = 'fake-city'
+            const mockUf = 'uf'
+            const request = { query: { city: mockCity, uf: mockUf, items: "1 , 2" } } as unknown as Request
+            const response = {
+                send: jest.fn(),
+                status: sinon.stub()
+            }
+            const dbMock = sinon.mock(knexMock)
+
+            response.status.withArgs(400).returnsThis()
+            /* SQL
+                SELECT DISTINCT point.* FROM points join point_item on point.id = point_item.point_id
+                where point_item.item_id in [query-passed-items]
+                and point.city = {query-passed-city}
+                and point.uf = {query-passed-uf}
+            */
+
+           buildIndexMockedQuery(dbMock, mockCity, mockUf).rejects(new Error("a"))
+
+
+            const pointsController = new PointsController(knexMock as unknown as Knex)
+            await pointsController.index(request as Request, response as unknown as Response)
+
+            dbMock.verify()
+
+            sinon.assert.calledWith(response.status, 400)
+            expect(response.send).toHaveBeenCalledWith(expect.objectContaining({message: expect.any(String)}))
+        })
+    })
+
+    
 
 })
