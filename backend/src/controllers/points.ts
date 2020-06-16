@@ -11,6 +11,29 @@ class PointsController {
         this.database = database
         this.logger = logger.getLogger()
     }
+    public async index(req: Request, res: Response) {
+        const { query: { city, uf, items } } = req
+        try {
+            const parsedItems = String(items).split(',').map(item => Number(item.trim()))
+
+            const points = await this.database.from('points')
+                .join('point_item', 'points.id', '=', 'point_item.point_id')
+                .whereIn('point_item.item_id', parsedItems)
+                .where('city', String(city))
+                .where('uf', String(uf))
+                .distinct()
+                .select('points.*')
+
+            
+            return res.status(200).send({ data: points })
+
+        } catch (error) {
+            this.logger.error(error)
+            return res.status(400).send(new Error('Cannot find points with passed params'))
+        }
+
+    }
+
 
     public async create(req: Request, res: Response) {
         const trx = await this.database.transaction()
@@ -27,7 +50,7 @@ class PointsController {
                 items
             } = req.body
 
-            const [insertedPointId] = await trx.from('points').insert({
+            const point = {
                 image: 'a-fake-image',
                 name,
                 email,
@@ -36,7 +59,9 @@ class PointsController {
                 longitude,
                 city,
                 uf
-            })
+            }
+
+            const [insertedPointId] = await trx.from('points').insert(point)
 
             const pointItems: object[] = items.map((itemId: number) => {
                 return {
@@ -48,12 +73,12 @@ class PointsController {
             await trx.from('point_item').insert(pointItems)
             await trx.commit()
 
-            return res.status(201).send({ data: { success: true } })
+            return res.status(201).send({ data: { id: insertedPointId, ...point } })
         } catch (error) {
             this.logger.error(error)
             trx.rollback()
 
-            return res.status(500).send(new Error("aa"))
+            return res.status(500).send(new Error("Server Error"))
         }
 
     }
@@ -79,10 +104,10 @@ class PointsController {
 
         } catch (error) {
             this.logger.error(error)
-            console.error(error)
             res.status(500).send(new Error("Server error"))
         }
     }
+
 }
 
 export default PointsController
