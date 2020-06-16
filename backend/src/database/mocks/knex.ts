@@ -8,7 +8,10 @@ function knex() {
         rollback: () => { return },
         where: () => { return },
         first: () => { return },
-        join: () => { return }
+        join: () => { return },
+        whereIn: () => { return },
+        distinct: () => { return },
+        
     }
 }
 export default knex()
